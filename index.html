@@ -10,6 +10,12 @@
         api_host: 'https://us.i.posthog.com',
         defaults: '2026-05-30',
         person_profiles: 'always',
+        session_recording: {
+            captureCanvas: {
+              canvasFps: 2,
+              canvasQuality: "0.2",
+            }
+        }
     })
 </script>
 <style>
