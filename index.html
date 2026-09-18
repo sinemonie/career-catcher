@@ -493,6 +493,7 @@ function enterInterior(zone){
   keys.up=keys.down=keys.left=keys.right=false;
   document.getElementById("exitBtn").classList.remove("hidden");
   openToastCard(zone.name.toUpperCase(), zone.signIntro);
+  posthog.capture("zone_entered",{zone:zone.key,zones_caught:state.caughtCount});
 }
 function exitToWorld(){
   if(state.mode!=="interior") return;
@@ -553,6 +554,7 @@ function openJournal(){
   });
   journalOverlay.classList.remove("hidden");
   state.paused=true;
+  posthog.capture("journal_opened",{zones_caught:state.caughtCount,memories_found_total:state.gemsFound});
 }
 function closeJournal(){ journalOverlay.classList.add("hidden"); state.paused=false; }
 document.getElementById("journalClose").addEventListener("click",closeJournal);
@@ -611,6 +613,7 @@ function checkPickups(){
       showToast(g.fact);
       spawnBurst(p.px+TILE/2,p.py+TILE/2,z.accent);
       updateHUD();
+      posthog.capture("memory_found",{zone:z.key,zone_memories_found:z.gems.filter(zg=>zg.collected).length,zone_memories_total:z.gems.length,memories_found_total:state.gemsFound});
     }
   });
 }
@@ -647,6 +650,7 @@ function catchZone(z){
   spawnBurst(TABLE_X*TILE+TILE/2, TABLE_Y*TILE+TILE/2, z.accent);
   updateHUD();
   openToastCard(z.name+" — TROPHY!", z.catchFlavor);
+  posthog.capture("zone_caught",{zone:z.key,zones_caught:state.caughtCount,memories_found_total:state.gemsFound});
   const catchable = zones.filter(zz=>!zz.ongoing);
   const ongoingReady = zones.filter(zz=>zz.ongoing).every(zz=>zz.gems.every(g=>g.collected));
   if(catchable.every(zz=>zz.caught) && ongoingReady) setTimeout(showEnd,400);
@@ -985,6 +989,7 @@ document.getElementById("startBtn").addEventListener("click",()=>{
   document.getElementById("intro-overlay").classList.add("hidden");
   state.started=true;
   document.getElementById("led").classList.remove("off");
+  posthog.capture("game_started",{zones_total:zones.length,memories_total:state.gemsTotal});
 });
 function showEnd(){
   state.ended=true;
@@ -996,6 +1001,7 @@ function showEnd(){
   });
   document.getElementById("end-overlay").classList.remove("hidden");
   state.paused=true;
+  posthog.capture("game_completed",{zones_caught:state.caughtCount,memories_found_total:state.gemsFound,memories_total:state.gemsTotal});
 }
 document.getElementById("replayBtn").addEventListener("click",()=>{
   zones.forEach(z=>{ z.caught=false; z.gems.forEach(g=>g.collected=false); });
